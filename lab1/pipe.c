@@ -70,6 +70,7 @@ int main(int argc, char *argv[]) {
                 close(pipefd[1]);
             }
 
+            // Wait for the child process to terminate
             int status;
             waitpid(pid, &status, 0);
 
@@ -77,6 +78,11 @@ int main(int argc, char *argv[]) {
             if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
                 fprintf(stderr, "Error: Process %s failed with exit status %d\n", argv[i], WEXITSTATUS(status));
                 exit(WEXITSTATUS(status));
+            }
+
+            // Exit after the last command is executed
+            if (i == argc - 1) {
+                exit(0);
             }
         }
     }
