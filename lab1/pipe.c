@@ -7,93 +7,77 @@
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s program1 [program2 ...]\n", argv[0]);
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "Error: No programs specified.\n");
+        exit(EINVAL);
     }
 
-    // Number of programs
-    int num_programs = argc - 1;
+    int pipefd[2];
 
-    // Create an array to store file descriptors for pipes
-    int pipe_fds[num_programs - 1][2];
-
-    // Fork processes and set up pipes
-    for (int i = 0; i < num_programs - 1; ++i) {
-        if (pipe(pipe_fds[i]) == -1) {
-            perror("pipe");
-            exit(EXIT_FAILURE);
+    for (int i = 1; i < argc; ++i) {
+        if (i < argc - 1) {
+            // Create a pipe
+            if (pipe(pipefd) == -1) {
+                perror("Error in pipe");
+                exit(errno);
+            }
         }
 
-        pid_t child_pid = fork();
+        pid_t pid = fork();
 
-        if (child_pid == -1) {
-            perror("fork");
-            exit(EXIT_FAILURE);
-        } else if (child_pid == 0) {
-            // Child process
+        if (pid < 0) {
+            perror("Error in fork");
+            exit(errno);
+        } else if (pid == 0) {  // Child process
+            if (i > 1) {
+                // Redirect standard input to the read end of the pipe
+                if (dup2(pipefd[0], STDIN_FILENO) == -1) {
+                    perror("Error in dup2");
+                    exit(errno);
+                }
 
-            // Close write end of the previous pipe
-            close(pipe_fds[i][1]);
-
-            // Redirect standard input to the read end of the pipe
-            if (dup2(pipe_fds[i][0], STDIN_FILENO) == -1) {
-                perror("dup2");
-                exit(EXIT_FAILURE);
+                // Close unused write end of the pipe
+                close(pipefd[1]);
             }
 
-            // Close the read end of the pipe
-            close(pipe_fds[i][0]);
+            if (i < argc - 1) {
+                // Redirect standard output to the write end of the pipe
+                if (dup2(pipefd[1], STDOUT_FILENO) == -1) {
+                    perror("Error in dup2");
+                    exit(errno);
+                }
 
-            // Execute the program
-            execlp(argv[i + 1], argv[i + 1], (char *)NULL);
+                // Close unused read end of the pipe
+                close(pipefd[0]);
+            }
+
+            // Redirect standard error to the parent's standard error
+            if (dup2(STDERR_FILENO, STDERR_FILENO) == -1) {
+                perror("Error in dup2");
+                exit(errno);
+            }
+
+            // Execute program using execlp
+            execlp(argv[i], argv[i], (char *)NULL);
 
             // If execlp fails
-            perror("execlp");
-            exit(EXIT_FAILURE);
+            perror("Error in execlp");
+            exit(errno);
         } else {
             // Parent process
+            // Close both ends of the pipe in the parent
+            if (i < argc - 1) {
+                close(pipefd[0]);
+                close(pipefd[1]);
+            }
 
-            // Close the read end of the previous pipe
-            close(pipe_fds[i][0]);
-        }
-    }
+            int status;
+            waitpid(pid, &status, 0);
 
-    // Fork the last process
-    pid_t last_child_pid = fork();
-
-    if (last_child_pid == -1) {
-        perror("fork");
-        exit(EXIT_FAILURE);
-    } else if (last_child_pid == 0) {
-        // Child process
-
-        // Redirect standard output to the write end of the last pipe
-        if (dup2(pipe_fds[num_programs - 2][1], STDOUT_FILENO) == -1) {
-            perror("dup2");
-            exit(EXIT_FAILURE);
-        }
-
-        // Close the write end of the last pipe
-        close(pipe_fds[num_programs - 2][1]);
-
-        // Execute the last program
-        execlp(argv[num_programs], argv[num_programs], (char *)NULL);
-
-        // If execlp fails
-        perror("execlp");
-        exit(EXIT_FAILURE);
-    } else {
-        // Parent process
-
-        // Close the write end of the last pipe
-        close(pipe_fds[num_programs - 2][1]);
-    }
-
-    // Wait for all child processes to complete
-    for (int i = 0; i < num_programs; ++i) {
-        if (wait(NULL) == -1) {
-            perror("wait");
-            exit(EXIT_FAILURE);
+            // Check if child process exited successfully
+            if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
+                fprintf(stderr, "Error: Process %s failed with exit status %d\n", argv[i], WEXITSTATUS(status));
+                exit(WEXITSTATUS(status));
+            }
         }
     }
 
