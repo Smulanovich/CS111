@@ -13,7 +13,7 @@ TODO: sudo insmod process_monitor.ko cat /proc/process_monitor
 
 
 ```
-TODO: results?
+TODO: results? 162
 
 ## Cleaning Up
 ```shell
@@ -24,7 +24,12 @@ TODO: make clean sudo rmmod proc_count.ko
 ```python
 python -m unittest
 ```
-TODO: results? 162
+TODO: results? 
+
+    Ran 3 tests in 0.712s
+
+    OK
+
 
 Report which kernel release version you tested your module on
 (hint: use `uname`, check for options with `man uname`).
