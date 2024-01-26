@@ -29,25 +29,25 @@ int main(int argc, char *argv[]) {
             exit(errno);
         } else if (pid == 0) {  // Child process
             if (i > 1) {
-                // Redirect standard input to the read end of the pipe
+                // Check if the read end of the pipe is a valid file descriptor
                 if (dup2(pipefd[0], STDIN_FILENO) == -1) {
                     perror("Error in dup2");
                     exit(errno);
                 }
 
-                // Close unused write end of the pipe
-                close(pipefd[1]);
+                // Close the read end of the pipe
+                close(pipefd[0]);
             }
 
             if (i < argc - 1) {
-                // Redirect standard output to the write end of the pipe
+                // Check if the write end of the pipe is a valid file descriptor
                 if (dup2(pipefd[1], STDOUT_FILENO) == -1) {
                     perror("Error in dup2");
                     exit(errno);
                 }
 
-                // Close unused read end of the pipe
-                close(pipefd[0]);
+                // Close the write end of the pipe
+                close(pipefd[1]);
             }
 
             // Redirect standard error to the parent's standard error
