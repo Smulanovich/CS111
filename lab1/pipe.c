@@ -8,7 +8,7 @@
 int main(int argc, char *argv[])
 {
     if (argc < 2) {
-        perror("Not enough arguments");
+        perror("Invalid argument");
         exit(EINVAL);
     }
 
@@ -39,20 +39,29 @@ int main(int argc, char *argv[])
             // Child process
             if (i != 1) {
                 // If not the first program, redirect stdin to the saved input_fd
-                dup2(input_fd, STDIN_FILENO);
+                if (dup2(input_fd, STDIN_FILENO) == -1) {
+                    perror("Error redirecting stdin");
+                    exit(errno);
+                }
             }
 
             if (i != argc - 1) {
                 // If not the last program, redirect stdout to the write end of the pipe
-                dup2(pipe_fd[1], STDOUT_FILENO);
+                if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) {
+                    perror("Error redirecting stdout");
+                    exit(errno);
+                }
                 close(pipe_fd[1]); // Close unused write end
             }
 
             // Close all file descriptors associated with the pipe
             close(pipe_fd[0]);
-            
+            close(pipe_fd[1]);
+
             // Execute the program
             execlp(argv[i], argv[i], NULL);
+
+            // If execlp fails, report the error and exit with a standard failure code
             perror("Error executing program");
             exit(errno);
         } else {
@@ -66,7 +75,14 @@ int main(int argc, char *argv[])
             input_fd = pipe_fd[0];
 
             // Wait for child to finish
-            waitpid(child_pid, NULL, 0);
+            int status;
+            waitpid(child_pid, &status, 0);
+
+            // Check if the child process exited successfully
+            if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+                fprintf(stderr, "Child process %d did not exit successfully\n", (int)child_pid);
+                exit(EXIT_FAILURE);
+            }
         }
     }
 
