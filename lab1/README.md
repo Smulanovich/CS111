@@ -1,17 +1,28 @@
-## UID: 123456789
+## UID: 705913985
 
-## Pipe Up
+# Pipe Up
 
-One sentence description
+## One Sentence Description
+
+Pipe Up is a C program that simulates the behavior of the shell pipe (|) operator, allowing users to execute multiple programs in a pipeline, with proper input and output redirection.
 
 ## Building
 
-Explain briefly how to build your program
+To build the program, use the following command since Makefile is being used:
+
+    make
+
 
 ## Running
 
-Show an example run of your program, using at least two additional arguments, and what to expect
+./pipe_up ls cat wc
+
+This command executes the ls command (lists the files in the current directory), pipes its output to cat, and then pipes the result to wc. The output should be the same as running ls | cat | wc in a shell.
+
 
 ## Cleaning up
 
-Explain briefly how to clean up all binary files
+To clean up the following command can be used since Makefile is being used:
+
+    make clean
+
