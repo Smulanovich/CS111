@@ -8,7 +8,7 @@ Pipe Up is a C program that simulates the behavior of the shell pipe (|) operato
 
 ## Building
 
-To build the program, use the following command since Makefile is being used:
+To build the program, make sure you are in the right directory use the following command (on the command line) since Makefile is being used:
 
     make
 
@@ -22,7 +22,7 @@ This command executes the ls command (lists the files in the current directory),
 
 ## Cleaning up
 
-To clean up the following command can be used since Makefile is being used:
+To clean up, make sure you are in the right directory use the following command (on the command line) since Makefile is being used:
 
     make clean
 
