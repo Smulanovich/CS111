@@ -1,5 +1,11 @@
 {
     "files.associations": {
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "*.tcc": "c",
+        "string_view": "c",
+        "algorithm": "c",
+        "random": "c",
+        "limits": "c",
+        "numeric": "c"
     }
 }

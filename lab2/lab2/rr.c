@@ -228,8 +228,8 @@ int main(int argc, char *argv[])
     current_time++; // Move to the next time unit
   } while (completed_processes_count < size);
 
-  printf("Waiting time: %.2f\n", (float)total_waiting_time / size);
-  printf("Response time: %.2f\n", (float)total_response_time / size);
+  printf("Average waiting time: %.2f\n", (float)total_waiting_time / size);
+  printf("Average response time: %.2f\n", (float)total_response_time / size);
   /* End of "Your code here" */
 
   free(data);
