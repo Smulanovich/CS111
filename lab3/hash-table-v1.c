@@ -32,7 +32,12 @@ struct hash_table_v1 *hash_table_v1_create()
         struct hash_table_entry *entry = &hash_table->entries[i];
         SLIST_INIT(&entry->list_head);
     }
-    pthread_mutex_init(&hash_table->mutex, NULL); // Initialize the mutex
+    int pv = pthread_mutex_init(&hash_table->mutex, NULL); // Initialize the mutex
+    // Check if the mutex was initialized successfully
+    if (pv){
+        free(hash_table);
+        exit(pv);
+    }
     return hash_table;
 }
 
@@ -75,7 +80,12 @@ void hash_table_v1_add_entry(struct hash_table_v1 *hash_table,
                              const char *key,
                              uint32_t value)
 {
-    pthread_mutex_lock(&hash_table->mutex); // Lock the mutex
+    int pv1 = pthread_mutex_lock(&hash_table->mutex); // Lock the mutex
+    // Check if the mutex was locked successfully
+    if (pv1){
+        free(hash_table);
+        exit(pv1);
+    }
     
     struct hash_table_entry *hash_table_entry = get_hash_table_entry(hash_table, key);
     struct list_head *list_head = &hash_table_entry->list_head;
@@ -84,7 +94,12 @@ void hash_table_v1_add_entry(struct hash_table_v1 *hash_table,
     /* Update the value if it already exists */
     if (list_entry != NULL) {
         list_entry->value = value;
-        pthread_mutex_unlock(&hash_table->mutex); // Unlock before returning
+        int pv2 = pthread_mutex_unlock(&hash_table->mutex); // Unlock before returning
+        // Check if the mutex was unlocked successfully
+        if (pv2){
+            free(hash_table);
+            exit(pv2);
+        }
         return;
     }
 
@@ -93,7 +108,12 @@ void hash_table_v1_add_entry(struct hash_table_v1 *hash_table,
     list_entry->value = value;
     SLIST_INSERT_HEAD(list_head, list_entry, pointers);
     
-    pthread_mutex_unlock(&hash_table->mutex); // Unlock the mutex
+    int pv2 = pthread_mutex_unlock(&hash_table->mutex); // Unlock the mutex
+    // Check if the mutex was unlocked successfully
+    if (pv2){
+        free(hash_table);
+        exit(pv2);
+    }
 }
 
 
@@ -119,6 +139,11 @@ void hash_table_v1_destroy(struct hash_table_v1 *hash_table)
             free(list_entry);
         }
     }
-    pthread_mutex_destroy(&hash_table->mutex); // Destroy the mutex
+    int pv = pthread_mutex_destroy(&hash_table->mutex); // Destroy the mutex
+    // Check if the mutex was destroyed successfully
+    if (pv) {
+        free(hash_table);
+        exit(pv);
+    }
     free(hash_table);
 }
