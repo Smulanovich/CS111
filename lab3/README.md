@@ -1,5 +1,5 @@
 # Hash Hash Hash
-TODO introduction
+This lab focuses on enhancing a serial hash table for concurrent use by implementing mutex locks for thread synchronization across two versions: hash-table-v1 and hash-table-v2. Each version employs a distinct locking strategy to ensure thread safety while preserving the hash table's separate chaining collision resolution mechanism. The exercise involves evaluating the correctness and performance impacts of these strategies against the base implementation.
 
 ## Building
 ```shell
