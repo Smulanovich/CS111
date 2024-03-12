@@ -289,7 +289,7 @@ void write_block_bitmap(int fd)
     memset(map_value, 0xFF, BLOCK_SIZE);
 
     // Mark blocks 24-1023 as 'free'
-    for (int i = 24; i < NUM_BLOCKS; ++i) {
+    for (int i = 23; i < NUM_BLOCKS; ++i) {
         map_value[i / 8] &= ~(1 << (i % 8));
     }
 
@@ -411,7 +411,7 @@ void write_inode_table(int fd) {
 
 
 	// Inode for the "hello" symlink (fast symlink)
-	u8 symlink_size = strlen("hello-world") + 1; // Include null terminator
+	u8 symlink_size = strlen("hello-world"); // Include null terminator
 	struct ext2_inode hello_symlink_inode = {0};
 	hello_symlink_inode.i_mode = EXT2_S_IFLNK | EXT2_S_IRUSR | EXT2_S_IWUSR | EXT2_S_IRGRP | EXT2_S_IROTH;
 	hello_symlink_inode.i_uid = 1000;
@@ -444,17 +444,17 @@ void write_root_dir_block(int fd)
 
 	ssize_t bytes_remaining = BLOCK_SIZE;
 
-	// Parent (..) directory entry
-	struct ext2_dir_entry parent_entry = {0};
-	dir_entry_set(parent_entry, EXT2_ROOT_INO, "..");
-	dir_entry_write(parent_entry, fd);
-	bytes_remaining -= parent_entry.rec_len;
-
 	// Current (.) directory entry
 	struct ext2_dir_entry current_entry = {0};
 	dir_entry_set(current_entry, EXT2_ROOT_INO, ".");
 	dir_entry_write(current_entry, fd);
 	bytes_remaining -= current_entry.rec_len;
+
+	// Parent (..) directory entry
+	struct ext2_dir_entry parent_entry = {0};
+	dir_entry_set(parent_entry, EXT2_ROOT_INO, "..");
+	dir_entry_write(parent_entry, fd);
+	bytes_remaining -= parent_entry.rec_len;
 
 	// Hello symlink directory entry
 	struct ext2_dir_entry hello_entry = {0};
