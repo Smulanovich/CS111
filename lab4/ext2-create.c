@@ -289,7 +289,7 @@ void write_block_bitmap(int fd)
     memset(map_value, 0xFF, BLOCK_SIZE);
 
     // Mark blocks 24-1023 as 'free'
-    for (int i = 23; i < NUM_BLOCKS; ++i) {
+    for (int i = 23; i < NUM_BLOCKS - 1; ++i) {
         map_value[i / 8] &= ~(1 << (i % 8));
     }
 
