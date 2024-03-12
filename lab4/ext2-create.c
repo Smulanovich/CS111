@@ -29,7 +29,7 @@ typedef int32_t i32;
 #define SUPERBLOCK_BLOCKNO             1
 #define BLOCK_GROUP_DESCRIPTOR_BLOCKNO 2
 #define BLOCK_BITMAP_BLOCKNO           3
-#define INODE_BITMAP_BLOCKNO           4
+#define INODE_BITMAP_BLOCKNO           4 
 #define INODE_TABLE_BLOCKNO            5
 #define ROOT_DIR_BLOCKNO               21
 #define LOST_AND_FOUND_DIR_BLOCKNO     22
@@ -289,7 +289,7 @@ void write_block_bitmap(int fd)
     memset(map_value, 0xFF, BLOCK_SIZE);
 
     // Mark blocks 24-1023 as 'free'
-    for (int i = 23; i < NUM_BLOCKS - 1; ++i) {
+    for (int i = LAST_BLOCK; i < NUM_BLOCKS - 1; ++i) {
         map_value[i / 8] &= ~(1 << (i % 8));
     }
 
@@ -314,7 +314,7 @@ void write_inode_bitmap(int fd)
     memset(map_value, 0xFF, BLOCK_SIZE);
 
     // Mark inodes 11-128 as 'free'
-    for (int i = EXT2_GOOD_OLD_FIRST_INO; i < NUM_INODES; ++i) {
+    for (int i = LAST_INO; i < NUM_INODES; ++i) {
         map_value[i / 8] &= ~(1 << (i % 8));
     }
 
