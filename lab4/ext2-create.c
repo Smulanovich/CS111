@@ -411,7 +411,7 @@ void write_inode_table(int fd) {
 
 
 	// Inode for the "hello" symlink (fast symlink)
-	u8 symlink_size = strlen("hello-world"); // Include null terminator
+	u8 symlink_size = strlen("hello-world") + 1; // Include null terminator
 	struct ext2_inode hello_symlink_inode = {0};
 	hello_symlink_inode.i_mode = EXT2_S_IFLNK | EXT2_S_IRUSR | EXT2_S_IWUSR | EXT2_S_IRGRP | EXT2_S_IROTH;
 	hello_symlink_inode.i_uid = 1000;
