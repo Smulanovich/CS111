@@ -209,8 +209,8 @@ void write_superblock(int fd) {
     superblock.s_first_data_block = 1;                 // First Data Block
     superblock.s_log_block_size = 0;                   // Block size (1024 bytes)
     superblock.s_log_frag_size = 0;                    // Fragment size (1024 bytes)
-    superblock.s_blocks_per_group = NUM_BLOCKS;        // Blocks per group
-    superblock.s_frags_per_group = NUM_BLOCKS;         // Frags per group
+    superblock.s_blocks_per_group = 8 * NUM_BLOCKS;        // Blocks per group
+    superblock.s_frags_per_group = 8 * NUM_BLOCKS;         // Frags per group
     superblock.s_inodes_per_group = NUM_INODES;        // Inodes per group
     superblock.s_mtime = current_time;                 // Mount time
     superblock.s_wtime = current_time;                 // Write time
@@ -423,9 +423,8 @@ void write_inode_table(int fd) {
 	hello_symlink_inode.i_dtime = 0;
 	hello_symlink_inode.i_links_count = 1;
 	hello_symlink_inode.i_blocks = 0; // No separate data blocks are used for a fast symlink
-	// Copy the symlink path directly into the i_block array
 	memcpy((char *)hello_symlink_inode.i_block, "hello-world", symlink_size);
-	// Make sure to null-terminate the string if it does not fill the entire i_block array
+	// Null-terminating the string if it does not fill the entire i_block array
 	((char *)hello_symlink_inode.i_block)[symlink_size - 1] = '\0';
 
 	write_inode(fd, HELLO_INO, &hello_symlink_inode);
