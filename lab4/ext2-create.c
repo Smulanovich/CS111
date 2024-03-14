@@ -217,7 +217,7 @@ void write_superblock(int fd) {
     superblock.s_mnt_count = 0;                        // Number of times mounted so far
     superblock.s_max_mnt_count = 0xFFFF;               // Make this unlimited (-1 is 0xFFFF)
     superblock.s_magic = EXT2_SUPER_MAGIC;             // ext2 Signature
-    superblock.s_state = 1;                            // File system is clean
+    superblock.s_state = 0;                            // File system is clean
     superblock.s_errors = 1;                           // Ignore the error (continue on)
     superblock.s_minor_rev_level = 0;                  // Leave this as 0
     superblock.s_lastcheck = current_time;             // Last check time
@@ -411,23 +411,21 @@ void write_inode_table(int fd) {
 
 
 	// Inode for the "hello" symlink (fast symlink)
-	u8 symlink_size = strlen("hello-world") + 1; // Include null terminator
+	u8 symlink_size = strlen("hello-world"); // No need to add 1 for the null terminator for the size
 	struct ext2_inode hello_symlink_inode = {0};
 	hello_symlink_inode.i_mode = EXT2_S_IFLNK | EXT2_S_IRUSR | EXT2_S_IWUSR | EXT2_S_IRGRP | EXT2_S_IROTH;
 	hello_symlink_inode.i_uid = 1000;
 	hello_symlink_inode.i_gid = 1000;
-	hello_symlink_inode.i_size = symlink_size; // Size of the symlink path including null terminator
+	hello_symlink_inode.i_size = symlink_size; // The length of the string "hello-world" is 11 bytes
 	hello_symlink_inode.i_atime = current_time;
 	hello_symlink_inode.i_ctime = current_time;
 	hello_symlink_inode.i_mtime = current_time;
 	hello_symlink_inode.i_dtime = 0;
 	hello_symlink_inode.i_links_count = 1;
-	hello_symlink_inode.i_blocks = 0; // No separate data blocks are used for a fast symlink
-	memcpy((char *)hello_symlink_inode.i_block, "hello-world", symlink_size);
-	// Null-terminating the string if it does not fill the entire i_block array
-	((char *)hello_symlink_inode.i_block)[symlink_size - 1] = '\0';
-
+	hello_symlink_inode.i_blocks = 0; // No data blocks are used for a fast symlink
+	memcpy(hello_symlink_inode.i_block, "hello-world", symlink_size); // Directly store the string in the i_block
 	write_inode(fd, HELLO_INO, &hello_symlink_inode);
+
 
 }
 
@@ -469,7 +467,7 @@ void write_root_dir_block(int fd)
 
 	// Lost+Found directory entry
 	struct ext2_dir_entry lost_and_found_entry = {0};
-	dir_entry_set(lost_and_found_entry, LOST_AND_FOUND_INO, "lost_found");
+	dir_entry_set(lost_and_found_entry, LOST_AND_FOUND_INO, "lost+found");
 	dir_entry_write(lost_and_found_entry, fd);
 	bytes_remaining -= lost_and_found_entry.rec_len;
 
